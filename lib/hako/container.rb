@@ -21,6 +21,7 @@ module Hako
       image_tag
       docker_labels
       cpu
+      essential
       memory
       memory_reservation
       links
@@ -104,6 +105,7 @@ module Hako
     def default_config
       {
         'cpu' => 0,
+        'essential' => true,
         'env' => {},
         'docker_labels' => {},
         'links' => [],
