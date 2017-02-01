@@ -555,7 +555,7 @@ module Hako
             end
             return containers
           end
-          sleep 1
+          sleep 5 # NOTE: prevent Aws::ECS::Errors::ThrottlingException
         end
       end
 
