@@ -481,11 +481,6 @@ module Hako
           },
           count: 1,
           started_by: 'hako oneshot',
-          placement_constraints: [
-            {
-              type: 'distinctInstance',
-            },
-          ],
         )
         result.failures.each do |failure|
           Hako.logger.error("#{failure.arn} #{failure.reason}")
