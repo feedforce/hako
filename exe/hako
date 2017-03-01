@@ -1,7 +1,7 @@
 #!/usr/bin/env ruby
 # frozen_string_literal: true
 require 'hako/cli'
-require 'english'
+require 'English'
 
 at_exit do
   Hako.logger.error $ERROR_INFO if $ERROR_INFO
