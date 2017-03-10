@@ -706,7 +706,7 @@ module Hako
           current = asg.instances.count { |i| i.lifecycle_state == 'InService' }
           if asg.desired_capacity != current
             Hako.logger.debug("#{asg.auto_scaling_group_name} isn't in desired state. desired_capacity=#{asg.desired_capacity} in-service instances=#{current}")
-            sleep 1
+            sleep 5
             next
           end
 
@@ -717,7 +717,7 @@ module Hako
           end
           unless out_instances.empty?
             Hako.logger.debug("There's instances that is running but not registered as container instances: #{out_instances}")
-            sleep 1
+            sleep 5
             next
           end
 
