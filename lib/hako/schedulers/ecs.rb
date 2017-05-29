@@ -464,7 +464,19 @@ module Hako
       # @param task_definition [String]
       # @return [Aws::ECS::Types::TaskDefinition]
       def find_task_definition(task_definition:)
-        ecs_client.describe_task_definition(task_definition: task_definition).task_definition
+        retry_num = 0
+        begin
+          ecs_client.describe_task_definition(task_definition: task_definition).task_definition
+        rescue Aws::ECS::Errors::ClientException => e
+          # In rare cases, Avoid failure of getting task definition
+          sleep 1
+          if retry_num < 3
+            retry_num += 1
+            retry
+          else
+            raise e
+          end
+        end
       end
 
       # @param [Aws::ECS::Types::TaskDefinition] task_definition
