@@ -67,7 +67,7 @@ module Hako
           task_definition = register_task_definition(definitions)
           if task_definition == :noop
             Hako.logger.info "Task definition isn't changed"
-            task_definition = ecs_client.describe_task_definition(task_definition: @app_id).task_definition
+            task_definition = find_task_definition(task_definition: @app_id)
           else
             Hako.logger.info "Registered task definition: #{task_definition.task_definition_arn}"
           end
@@ -95,7 +95,7 @@ module Hako
           exit 1
         end
 
-        task_definition = ecs_client.describe_task_definition(task_definition: current_service.task_definition).task_definition
+        task_definition = find_task_definition(task_definition: current_service.task_definition)
         current_definition = "#{task_definition.family}:#{task_definition.revision}"
         target_definition = find_rollback_target(task_definition)
         Hako.logger.info "Current task defintion is #{current_definition}. Rolling back to #{target_definition}"
@@ -134,7 +134,7 @@ module Hako
           task_definition = register_task_definition_for_oneshot(definitions)
           if task_definition == :noop
             Hako.logger.info "Task definition isn't changed"
-            task_definition = ecs_client.describe_task_definition(task_definition: "#{@app_id}-oneshot").task_definition
+            task_definition = find_task_definition(task_definition: "#{@app_id}-oneshot")
           else
             Hako.logger.info "Registered task definition: #{task_definition.task_definition_arn}"
           end
@@ -323,7 +323,7 @@ module Hako
       # @param [Aws::ECS::Types::Service] service
       # @return [Fixnum, nil]
       def find_front_port(service)
-        task_definition = ecs_client.describe_task_definition(task_definition: service.task_definition).task_definition
+        task_definition = find_task_definition(task_definition: service.task_definition)
         container_definitions = {}
         task_definition.container_definitions.each do |c|
           container_definitions[c.name] = c
@@ -340,7 +340,7 @@ module Hako
         if @force
           return true
         end
-        task_definition = ecs_client.describe_task_definition(task_definition: family).task_definition
+        task_definition = find_task_definition(task_definition: family)
         container_definitions = {}
         task_definition.container_definitions.each do |c|
           container_definitions[c.name] = c
@@ -459,6 +459,24 @@ module Hako
           user: container.user,
           log_configuration: container.log_configuration,
         }
+      end
+
+      # @param task_definition [String]
+      # @return [Aws::ECS::Types::TaskDefinition]
+      def find_task_definition(task_definition:)
+        retry_num = 0
+        begin
+          ecs_client.describe_task_definition(task_definition: task_definition).task_definition
+        rescue Aws::ECS::Errors::ClientException => e
+          # In rare cases, Avoid failure of getting task definition
+          sleep 1
+          if retry_num < 3
+            retry_num += 1
+            retry
+          else
+            raise e
+          end
+        end
       end
 
       # @param [Aws::ECS::Types::TaskDefinition] task_definition
