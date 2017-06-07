@@ -481,6 +481,12 @@ module Hako
           },
           count: 1,
           started_by: 'hako oneshot',
+          placement_strategy: [
+            {
+              type: 'spread',
+              field: 'instanceId',
+            },
+          ],
         )
         result.failures.each do |failure|
           Hako.logger.error("#{failure.arn} #{failure.reason}")
