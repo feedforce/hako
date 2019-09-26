@@ -751,16 +751,6 @@ module Hako
           desired = current + 1
           Hako.logger.info("Increment desired_capacity of #{asg.auto_scaling_group_name} from #{current} to #{desired}")
           autoscaling.set_desired_capacity(auto_scaling_group_name: asg.auto_scaling_group_name, desired_capacity: desired)
-          Hako.logger.info("Optimize desired_count of service to #{desired / 2}")
-          ecs_client.update_service(
-            cluster: @cluster,
-            service: 'daemon',
-            desired_count: desired / 2,
-            deployment_configuration: {
-              maximum_percent: 200,
-              minimum_healthy_percent: 100,
-            },
-          )
         end
       end
 
